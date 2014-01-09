@@ -19,8 +19,8 @@ end
 class DrowsyDromedary < Grape::API
   version 'v1', :using => :header #, :vendor => 'mongodb'
 
-  error_format :json
-  #default_format :json
+  default_error_formatter :txt
+  default_format :json
   format :json
 
   def initialize
