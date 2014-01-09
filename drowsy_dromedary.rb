@@ -55,7 +55,7 @@ class DrowsyDromedary < Grape::API
       @dbs ||= {}
       return @dbs[db] if @dbs[db]
       c = connect
-      
+
       if opts[:strict] == false
         c.db(db, :strict => false)
       else
@@ -135,7 +135,7 @@ class DrowsyDromedary < Grape::API
 
   post '/' do
     check_required_params(:db)
-    
+
     if connect.database_names.include? params[:db]
       status 200
       connect_to_db(params[:db]).collection_names
@@ -161,6 +161,7 @@ class DrowsyDromedary < Grape::API
           db_opts[:strict] = false
         end
       end
+
       @db = connect_to_db(params[:db], db_opts)
       unless @db
         error!("There is no database named #{params[:db].inspect}!", 404)
@@ -173,7 +174,7 @@ class DrowsyDromedary < Grape::API
 
     post do
       check_required_params(:collection)
-      
+
       if @db.collection_names.include? params[:collection]
         status 200
         @db.collection(params[:collection]).find().to_a
@@ -189,7 +190,8 @@ class DrowsyDromedary < Grape::API
       end
     end
 
-    resource '/:collection' do
+    namespace ":collection", :requirements => { collection: /[^\/]*/ } do
+
       desc "Retrieve all items in the collection"
       get do
         selector = extract_selector_from_params
@@ -261,7 +263,7 @@ class DrowsyDromedary < Grape::API
 
         data.delete 'id'
         data.delete '_id'
-        
+
         #@db.collection(params[:collection]).save(item)
         @db.collection(params[:collection]).update({"_id" => id}, {"$set" => data})
 
@@ -278,7 +280,9 @@ class DrowsyDromedary < Grape::API
           error!("Item #{params[:id].inspect} could not be deleted from #{params[:collection].inspect}!", 500)
         end
       end
-    end
-  end
+
+    end # }}} :namespace
+
+  end #  }}} :db
 
 end
